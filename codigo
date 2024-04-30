@@ -1,0 +1,152 @@
+class Usuario:
+    def __init__(self, nome, cpf, endereco):
+        self.nome = nome
+        self.cpf = cpf
+        self.endereco = endereco
+
+    def __str__(self):
+        return f"Nome: {self.nome}\nCPF: {self.cpf}\nEndereço: {self.endereco}"
+
+
+class ContaCorrente:
+    def __init__(self, numero_conta, titular, saldo=0, limite=500):
+        self.numero_conta = numero_conta
+        self.titular = titular
+        self.saldo = saldo
+        self.limite = limite
+        self.numero_saques = 0
+
+    def depositar(self, valor):
+        self.saldo += valor
+
+    def sacar(self, valor):
+        if self.saldo + self.limite >= valor:
+            self.saldo -= valor
+            self.numero_saques += 1
+            return True
+        else:
+            return False
+
+    def extrato(self):
+        return f"Número da conta: {self.numero_conta}\nTitular: {self.titular.nome}\nSaldo: {self.saldo}"
+
+
+def formatar_cpf(cpf):
+    cpf = ''.join(filter(str.isdigit, cpf))
+    cpf_formatado = f"{cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}"
+    return cpf_formatado
+
+
+def depositar():
+    print("🏦========= Depositar =========🏦")
+    numero_conta_deposito = int(input("Número da conta: "))
+    valor_deposito = float(input("Qual é o valor do depósito?\n=>"))
+    for conta in contas_corrente:
+        if conta.numero_conta == numero_conta_deposito:
+            conta.depositar(valor_deposito)
+            print("Depósito realizado com sucesso!")
+            return
+    print("Conta não encontrada.")
+
+
+def sacar():
+    print("💸========= Sacar =========💸")
+    numero_conta_saque = int(input("Número da conta: "))
+    valor_saque = float(input("Qual é o valor que deseja sacar?\n=>"))
+    for conta in contas_corrente:
+        if conta.numero_conta == numero_conta_saque:
+            if conta.sacar(valor_saque):
+                print("Saque realizado com sucesso!")
+                return
+            else:
+                print("Saldo insuficiente.")
+                return
+    print("Conta não encontrada.")
+
+
+def extrato():
+    print("📜========= Extrato =========📜")
+    numero_conta_extrato = int(input("Número da conta: "))
+    for conta in contas_corrente:
+        if conta.numero_conta == numero_conta_extrato:
+            print(conta.extrato())
+            return
+    print("Conta não encontrada.")
+
+
+def criar_usuario():
+    print("👤========= Criar Usuário =========👤")
+    nome = input("Nome do usuário: ")
+    cpf = input("CPF do usuário: ")
+
+    cpf_formatado = formatar_cpf(cpf)
+
+    for usuario in usuarios:
+        if usuario.cpf == cpf_formatado:
+            print("CPF já cadastrado. Um usuário com este CPF já existe.")
+            return
+
+    endereco = input("Endereço (logradouro, nro - bairro - cidade/estado): ")
+
+    novo_usuario = Usuario(nome, cpf_formatado, endereco)
+    usuarios.append(novo_usuario)
+    print("Usuário criado com sucesso!")
+
+
+def criar_conta_corrente():
+    global numero_conta
+    print("🔒========= Criar Conta Corrente =========🔒")
+    cpf = input("CPF do titular da conta: ")
+
+    titular_encontrado = None
+    for usuario in usuarios:
+        if usuario.cpf == cpf:
+            titular_encontrado = usuario
+            break
+    else:
+        print("Usuário com este CPF não encontrado.")
+        return
+
+    nova_conta_corrente = ContaCorrente(numero_conta, titular_encontrado)
+    contas_corrente.append(nova_conta_corrente)
+    numero_conta += 1
+    print(f"Conta corrente criada com sucesso! Número da conta: {nova_conta_corrente.numero_conta}")
+
+
+menu_options = {
+    'd': depositar,
+    's': sacar,
+    'e': extrato,
+    'u': criar_usuario,
+    'c': criar_conta_corrente
+}
+
+menu = """
+======================================
+[d]🏦 Depositar
+[s]💸 Sacar
+[e]📜 Extrato
+[u]👤 Criar Usuário
+[c]🔒 Criar Conta Corrente
+[q]❌ Sair
+======================================
+=> """
+
+
+def main():
+    while True:
+        opcao = input(menu)
+        if opcao.lower() == 'q':
+            break
+        elif opcao.lower() in menu_options:
+            menu_options[opcao.lower()]()
+        else:
+            print("Opção inválida! Por favor, selecione outra.")
+
+
+usuarios = []
+contas_corrente = []
+numero_conta = 1
+
+if __name__ == "__main__":
+    main()
